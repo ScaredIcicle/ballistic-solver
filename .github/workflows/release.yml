@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        config: [Release]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure (CMake)
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.config }} -j
+
+      - name: Test (ctest)
+        run: ctest --test-dir build -C ${{ matrix.config }} --output-on-failure
+
+      # Collect artifacts (shared library)
+      - name: Package artifacts (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item -Force build\Release\ballistic_c.dll dist\
+          if (Test-Path build\Release\ballistic_c.lib) { Copy-Item -Force build\Release\ballistic_c.lib dist\ }
+          if (Test-Path build\Release\ballistic_c.pdb) { Copy-Item -Force build\Release\ballistic_c.pdb dist\ }
+
+      - name: Package artifacts (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p dist
+          cp -f build/libballistic_c.so dist/ || cp -f build/Release/libballistic_c.so dist/
+
+      - name: Package artifacts (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p dist
+          cp -f build/libballistic_c.dylib dist/ || cp -f build/Release/libballistic_c.dylib dist/
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*
