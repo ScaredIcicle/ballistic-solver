@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ballistic-solver"
+version = "0.1.0"
+description = "C++ ballistic launch angle solver with a native DLL backend"
+requires-python = ">=3.8"
+
+[tool.setuptools]
+packages = ["ballistic_solver"]
+
+[tool.setuptools.package-data]
+ballistic_solver = ["_native/*.dll"]
