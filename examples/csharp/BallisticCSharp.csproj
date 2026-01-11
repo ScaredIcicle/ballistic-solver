@@ -8,8 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="ballistic_c.dll">
+    <None Include="..\..\build\$(Configuration)\ballistic_c.dll">
+      <Link>ballistic_c.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
 </Project>

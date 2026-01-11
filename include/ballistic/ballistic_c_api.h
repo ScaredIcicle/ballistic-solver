@@ -23,6 +23,8 @@ typedef struct BallisticInputs
     double v0;
     double kDrag;
 
+    int32_t arcMode; // 0=Low, 1=High
+    double g;
     double dt;
     double tMax;
     double tolMiss;

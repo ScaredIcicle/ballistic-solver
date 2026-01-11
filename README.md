@@ -59,6 +59,18 @@ This project instead **simulates the projectile** and **solves the intercept num
 * **Explicit success / failure reporting**
 * **Stable C ABI for multi-language use**
 * **Header-only C++ core**
+* **Low / High arc selection (v0.2.0)**
+
+---
+
+## Arc mode (v0.2.0)
+
+The solver can be guided to converge to either the **low arc** or the **high arc** solution.
+
+C ABI convention:
+
+* `arcMode = 0` → Low
+* `arcMode = 1` → High
 
 ---
 

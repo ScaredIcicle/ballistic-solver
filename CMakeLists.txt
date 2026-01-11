@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(ballistic_solver
-    VERSION 0.1.0
+    VERSION 0.2.0
     LANGUAGES CXX
 )
 
@@ -24,6 +24,8 @@ target_link_libraries(ballistic_example PRIVATE ballistic)
 add_library(ballistic_c SHARED
     src/ballistic_c_api.cpp
 )
+
+target_compile_definitions(ballistic_c PRIVATE BALLISTIC_C_EXPORTS)
 
 target_link_libraries(ballistic_c
     PRIVATE

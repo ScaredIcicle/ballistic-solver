@@ -20,6 +20,15 @@ int32_t ballistic_solve(const BallisticInputs* in, BallisticOutputs* out)
     {
         BallisticParams P;
 
+        if (in->arcMode == 1)
+        {
+            P.arcMode = ArcMode::High;
+        }
+        else
+        {
+            P.arcMode = ArcMode::Low;
+        }
+        if (std::isfinite(in->g)) { P.g = in->g; }
         if (std::isfinite(in->dt) && in->dt > 0.0) { P.dt = in->dt; }
         if (std::isfinite(in->tMax) && in->tMax > 0.0) { P.tMax = in->tMax; }
         if (std::isfinite(in->tolMiss) && in->tolMiss > 0.0) { P.tolMiss = in->tolMiss; }

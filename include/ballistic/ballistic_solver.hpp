@@ -10,7 +10,7 @@
 #endif
 
 // ================================================================
-// Vec3 (minimal)
+// Vec3
 // ================================================================
 struct Vec3
 {
@@ -53,7 +53,6 @@ inline double norm(const Vec3& v)
 // ================================================================
 // Utils
 // ================================================================
-
 inline double wrap_pi(double a)
 {
     a = std::fmod(a + M_PI, 2.0 * M_PI);
@@ -85,34 +84,29 @@ inline void vec_to_angles(const Vec3& r, double& theta, double& phi)
     phi = std::atan2(d.y, d.x);
 }
 
+enum class ArcMode
+{
+    Low,
+    High
+};
+
 // ================================================================
 // // Parameters (configurable)
 // ================================================================
 struct BallisticParams
 {
-    // ----------------------------
-    // Physical constants
-    // ----------------------------
+    ArcMode arcMode = ArcMode::Low; // Arc mode
+    
     double g = 9.80665;        // Gravity acceleration (m/s^2)
 
-    // ----------------------------
-    // Integration/search parameters
-    // ----------------------------
     double dt = 0.01;          // RK4 basic step
     double tMax = 20.0;        // Maximum simulation time
 
-    // ----------------------------
-    // Targeting/acceptance criteria
-    // ----------------------------
     double tolMiss = 1e-2;     // Success tolerance (miss distance)
     double beta = 1.0;         // Target offset correction factor
 
-    // ----------------------------
-    // Solver iteration control
-    // ----------------------------
     int maxIter = 20;
 
-    // LM(lambda) control
     double lambdaInit = 1e-6;
     double lambdaMin = 1e-12;
     double lambdaMax = 1e+6;
@@ -120,26 +114,20 @@ struct BallisticParams
     double lambdaDownMul = 0.3;
     int lambdaTries = 6;
 
-    // Line search
     int lineSearchTries = 10;
     double alphaMin = 1e-4;
 
-    // Angle bounds
     double thetaMin = -M_PI / 2.0;
     double thetaMax =  M_PI / 2.0;
 
-    // Broyden
     double broydenMinDenom = 1e-12;
 
-    // Acceptance tolerance relaxation
     double missEps = 1e-12;
 
-    // FD step size
     double fdScale = 1e-4;
     double fdMin = 1e-6;
     double fdMax = 1e-3;
 
-    // Golden-section
     int gsMaxIter = 20;
     double gsTolAbs = 1e-8;
     double gsTolRel = 1e-8;
@@ -247,13 +235,6 @@ inline Vec3 rel_vec(const Vec3& projPos, const Vec3& relPos0, const Vec3& relVel
     return projPos - target_pos(relPos0, relVel, t);
 }
 
-inline bool has_turn(bool hadDecreased, double d2Prev, double d2Curr, double qPrev, double qCurr)
-{
-    const bool turnByDistance = (hadDecreased && (d2Curr > d2Prev));
-    const bool turnByQSign = (hadDecreased && (qPrev <= 0.0) && (qCurr >= 0.0));
-    return turnByDistance || turnByQSign;
-}
-
 // ================================================================
 // Golden-section on [0, dt]
 // ================================================================
@@ -306,9 +287,9 @@ inline double golden_section_min(EvalF&& f, double dt, int maxIter, double tolAb
 }
 
 // ================================================================
-// Closest approach (projectile starts at origin)
+// Find closest approach (projectile starts at origin)
 // ================================================================
-inline void closest_approach(
+inline void find_closest_approach(
     const Vec3& projVel0,
     const Vec3& relPos0,
     const Vec3& relVel,
@@ -323,13 +304,11 @@ inline void closest_approach(
 
     double tPrev = 0.0;
 
-    Vec3 relPrev = rel_vec(prev.r, relPos0, relVel, tPrev);
-    double d2Prev = dot(relPrev, relPrev);
+    const Vec3 rel0 = rel_vec(prev.r, relPos0, relVel, 0.0);
+    const Vec3 relVel0 = prev.v - relVel;
+    double qPrev = dot(rel0, relVel0);
 
-    Vec3 relVelPrev = prev.v - relVel;
-    double qPrev = dot(relPrev, relVelPrev);
-
-    bool hadDecreased = false;
+    bool isLow = (P.arcMode == ArcMode::Low);
 
     while (tPrev < P.tMax)
     {
@@ -338,17 +317,13 @@ inline void closest_approach(
         const double tCurr = tPrev + P.dt;
 
         const Vec3 relCurr = rel_vec(curr.r, relPos0, relVel, tCurr);
-        const double d2Curr = dot(relCurr, relCurr);
-
-        if (d2Curr < d2Prev)
-        {
-            hadDecreased = true;
-        }
 
         const Vec3 relVelCurr = curr.v - relVel;
         const double qCurr = dot(relCurr, relVelCurr);
 
-        if (has_turn(hadDecreased, d2Prev, d2Curr, qPrev, qCurr))
+        bool allowCheck = isLow || curr.v.z <= 0.0;
+
+        if (allowCheck && (qPrev <= 0.0) && (qCurr >= 0.0))
         {
             auto eval_rel2 = [&](double tau) -> double
             {
@@ -379,8 +354,6 @@ inline void closest_approach(
         prev = curr;
         tPrev = tCurr;
 
-        relPrev = relCurr;
-        d2Prev = d2Curr;
         qPrev = qCurr;
     }
 
@@ -389,9 +362,9 @@ inline void closest_approach(
 }
 
 // ================================================================
-// Vacuum low-arc to point
+// Vacuum_arc_angles_to_point
 // ================================================================
-inline bool vacuum_low_arc_to_point(const Vec3& R, double v0, double g, double& theta, double& phi)
+inline bool vacuum_arc_angles_to_point(const Vec3& R, double v0, ArcMode mode, double g, double& theta, double& phi)
 {
     const double Rxy = std::sqrt(R.x * R.x + R.y * R.y);
     phi = std::atan2(R.y, R.x);
@@ -411,8 +384,11 @@ inline bool vacuum_low_arc_to_point(const Vec3& R, double v0, double g, double& 
         return false;
     }
 
-    const double tanLow = (v2 - std::sqrt(disc)) / (g * Rxy);
-    theta = std::atan(tanLow);
+    const double s = std::sqrt(disc);
+    const double num = (mode == ArcMode::High) ? (v2 + s) : (v2 - s);
+    const double tanTheta = num / (g * Rxy);
+
+    theta = std::atan(tanTheta);
 
     if (!std::isfinite(theta))
     {
@@ -430,6 +406,7 @@ inline void initial_guess_vacuum_lead(
     const Vec3& relPos0,
     const Vec3& relVel,
     double v0,
+    ArcMode mode,
     double g,
     double& theta0,
     double& phi0)
@@ -455,8 +432,11 @@ inline void initial_guess_vacuum_lead(
         return;
     }
 
-    const double tanLow = (v2 - std::sqrt(disc)) / (g * Rxy);
-    theta0 = std::atan(tanLow);
+    const double s = std::sqrt(disc);
+    const double num = (mode == ArcMode::High) ? (v2 + s) : (v2 - s);
+    const double tanTheta = num / (g * Rxy);
+
+    theta0 = std::atan(tanTheta);
 
     if (!std::isfinite(theta0))
     {
@@ -486,7 +466,7 @@ inline bool compute_angle_residual(
 
     Vec3 relMissAtStar;
     double tStar;
-    closest_approach(projVel0, relPos0, relVel, kDrag, P, relMissAtStar, tStar);
+    find_closest_approach(projVel0, relPos0, relVel, kDrag, P, relMissAtStar, tStar);
 
     miss = norm(relMissAtStar);
     relMissAtStar_out = relMissAtStar;
@@ -496,8 +476,8 @@ inline bool compute_angle_residual(
     const Vec3 aimCorr = aim - P.beta * relMissAtStar;
 
     double th0, ph0, th1, ph1;
-    const bool ok0 = vacuum_low_arc_to_point(aim, v0, P.g, th0, ph0);
-    const bool ok1 = vacuum_low_arc_to_point(aimCorr, v0, P.g, th1, ph1);
+    const bool ok0 = vacuum_arc_angles_to_point(aim, v0, P.arcMode, P.g, th0, ph0);
+    const bool ok1 = vacuum_arc_angles_to_point(aimCorr, v0, P.arcMode, P.g, th1, ph1);
 
     if (!ok0 || !ok1)
     {
@@ -679,7 +659,7 @@ inline SolverResult solve_launch_angles(
     // Initial guess
     // ----------------------------
     double theta, phi;
-    initial_guess_vacuum_lead(relPos0, relVel, v0, P.g, theta, phi);
+    initial_guess_vacuum_lead(relPos0, relVel, v0, P.arcMode, P.g, theta, phi);
     theta = std::clamp(theta, P.thetaMin, P.thetaMax);
     phi = wrap_pi(phi);
 

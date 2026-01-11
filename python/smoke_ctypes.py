@@ -12,14 +12,18 @@ DLL_PATH = dll_release if os.path.exists(dll_release) else dll_debug
 
 class BallisticInputs(Structure):
     _fields_ = [
-        ("relPos0", c_double * 3),
-        ("relVel",  c_double * 3),
-        ("v0",      c_double),
-        ("kDrag",   c_double),
-        ("dt",      c_double),
-        ("tMax",    c_double),
-        ("tolMiss", c_double),
-        ("maxIter", c_int32),
+        ("relPos0",  c_double * 3),
+        ("relVel",   c_double * 3),
+        ("v0",       c_double),
+        ("kDrag",    c_double),
+
+        ("arcMode",  c_int32),   # 0=Low, 1=High
+        ("g",        c_double),
+
+        ("dt",       c_double),
+        ("tMax",     c_double),
+        ("tolMiss",  c_double),
+        ("maxIter",  c_int32),
     ]
 
 class BallisticOutputs(Structure):
@@ -43,6 +47,10 @@ inp.relPos0[:] = (120.0, 30.0, 5.0)
 inp.relVel[:]  = (2.0, -1.0, 0.0)
 inp.v0 = 90.0
 inp.kDrag = 0.002
+
+inp.arcMode = 0       # Low
+inp.g = 9.80665       # default gravity
+
 inp.dt = 0.01
 inp.tMax = 30.0
 inp.tolMiss = 0.5
