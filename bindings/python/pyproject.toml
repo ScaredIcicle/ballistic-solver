@@ -7,10 +7,10 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "ballistic-solver"
-version = "0.3.0"
+version = "0.3.1"
 requires-python = ">=3.10"
 
 [tool.scikit-build]
 wheel.packages = ["ballistic_solver"]
-cmake.source-dir = "../.."
+cmake.source-dir = "."
 cmake.build-type = "Release"
