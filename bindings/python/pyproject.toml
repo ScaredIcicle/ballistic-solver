@@ -1,0 +1,16 @@
+[build-system]
+requires = [
+  "scikit-build-core>=0.10",
+  "pybind11>=2.11",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "ballistic-solver"
+version = "0.3.0"
+requires-python = ">=3.10"
+
+[tool.scikit-build]
+wheel.packages = ["ballistic_solver"]
+cmake.source-dir = "../.."
+cmake.build-type = "Release"

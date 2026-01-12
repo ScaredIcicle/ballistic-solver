@@ -1,77 +1,102 @@
-name: Release
+name: Native Release Assets
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_run:
+    workflows: ["Wheels"]
+    types: [completed]
 
 permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  native:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.ref, 'refs/tags/v')
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-        config: [Release]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
 
-      - name: Configure (CMake)
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+      - name: Configure (CMake Release)
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build build --config ${{ matrix.config }} -j
+        run: cmake --build build --config Release -j
 
-      - name: Test (ctest)
-        run: ctest --test-dir build -C ${{ matrix.config }} --output-on-failure
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
 
-      # Collect artifacts (shared library)
-      - name: Package artifacts (Windows)
+      - name: Package native (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp -f include/ballistic_solver_c_api.h dist/
+
+          if [[ "${RUNNER_OS}" == "Linux" ]]; then
+            libpath="$(find build -maxdepth 6 -type f -name "libballistic_solver.so" -print -quit)"
+          else
+            libpath="$(find build -maxdepth 6 -type f -name "libballistic_solver.dylib" -print -quit)"
+          fi
+
+          if [[ -z "${libpath:-}" ]]; then
+            echo "ERROR: shared library not found under build/"
+            exit 1
+          fi
+
+          cp -f "$libpath" dist/
+
+          ref="${{ github.event.workflow_run.ref }}"
+          tag="${ref#refs/tags/}"
+          os="$(echo "${RUNNER_OS}" | tr '[:upper:]' '[:lower:]')"
+          (cd dist && zip -r "../ballistic_${tag}_${os}.zip" .)
+
+      - name: Package native (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
-          Copy-Item -Force build\Release\ballistic_c.dll dist\
-          Copy-Item -Force include\ballistic\ballistic_c_api.h dist\
-          if (Test-Path build\Release\ballistic_c.lib) { Copy-Item -Force build\Release\ballistic_c.lib dist\ }
-          if (Test-Path build\Release\ballistic_c.pdb) { Copy-Item -Force build\Release\ballistic_c.pdb dist\ }
+          Copy-Item -Force include\ballistic_solver_c_api.h dist\
 
-      - name: Package artifacts (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          mkdir -p dist
-          cp -f build/libballistic_c.so dist/ || cp -f build/Release/libballistic_c.so dist/
-          cp -f include/ballistic/ballistic_c_api.h dist/
+          $dll = Get-ChildItem -Path build -Recurse -Filter ballistic_solver.dll -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $dll)
+          {
+            Write-Error "ERROR: ballistic_solver.dll not found under build/"
+            exit 1
+          }
+          Copy-Item -Force $dll.FullName dist\
 
-      - name: Package artifacts (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          mkdir -p dist
-          cp -f build/libballistic_c.dylib dist/ || cp -f build/Release/libballistic_c.dylib dist/
-          cp -f include/ballistic/ballistic_c_api.h dist/
-
-      - name: Zip artifacts (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $tag = "${{ github.ref_name }}"
+          $ref = "${{ github.event.workflow_run.ref }}"
+          $tag = $ref -replace '^refs/tags/', ''
           Compress-Archive -Path dist\* -DestinationPath "ballistic_${tag}_windows.zip" -Force
 
-      - name: Zip artifacts (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          tag="${{ github.ref_name }}"
-          os="$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')"
-          zip -r "ballistic_${tag}_${os}.zip" dist
-
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
+      - uses: actions/upload-artifact@v4
         with:
-          files: |
-            dist/*
-            ballistic_*.zip
+          name: native-${{ runner.os }}
+          path: ballistic_*.zip
+
+  upload:
+    needs: [native]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Upload zips to existing Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ref="${{ github.event.workflow_run.ref }}"
+          tag="${ref#refs/tags/}"
+          gh release upload "$tag" dist/*.zip --clobber

@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="assets/banner.svg" alt="Banner" width="100%">
-</p>
+<img width="2024" height="512" alt="banner" src="https://github.com/user-attachments/assets/f4e57e3f-f584-4938-a321-e9dd83dbbac3" />
 
 **ballistic-solver** is a native C/C++ numerical solver that computes launch angles to intercept moving targets under gravity and quadratic air drag.
 Unlike vacuum or closed-form solutions, this solver works in **real-time** and **fully nonlinear** conditions and converges even when trajectories are strongly curved.
@@ -37,9 +35,7 @@ See `ballistic_c_api.h` for `BallisticInputs/Outputs` definitions.
 
 Highly curved trajectories under strong air drag, still converging to a hit against moving targets.
 
-![ballistic_demo](https://github.com/user-attachments/assets/d88c2f91-09c6-48be-a950-461bfef18ed4)
-
-Full video is available in the repository or GitHub Releases.
+https://github.com/user-attachments/assets/dcaf7479-cb94-477a-b71e-470a5b4c6004
 
 ---
 
@@ -71,6 +67,10 @@ C ABI convention:
 
 * `arcMode = 0` → Low
 * `arcMode = 1` → High
+
+### High arc example
+
+https://github.com/user-attachments/assets/4334ed87-597e-4ad4-b21e-c1a1a17e8cd8
 
 ---
 
