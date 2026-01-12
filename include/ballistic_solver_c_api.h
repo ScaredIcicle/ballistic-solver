@@ -60,6 +60,8 @@ typedef struct BallisticOutputs
     char message[256];
 } BallisticOutputs;
 
+BALLISTIC_SOLVER_C_API void ballistic_inputs_init(BallisticInputs* in);
+
 BALLISTIC_SOLVER_C_API int32_t ballistic_solve(const BallisticInputs* in, BallisticOutputs* out);
 
 #ifdef __cplusplus

@@ -25,7 +25,7 @@ target_include_directories(ballistic_solver
 
 target_compile_definitions(ballistic_solver PRIVATE
     BALLISTIC_SOLVER_EXPORTS
-    BALLISTIC_SOLVER_ABI_VERSION=1
+    BALLISTIC_SOLVER_ABI_VERSION=2
     BALLISTIC_SOLVER_VERSION_STRING=\"${PROJECT_VERSION}\"
 )
 
