@@ -4,6 +4,8 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -22,7 +24,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3
+        uses: pypa/cibuildwheel@v3.3.1
         with:
           package-dir: bindings/python
           output-dir: wheelhouse
