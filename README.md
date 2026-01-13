@@ -27,7 +27,7 @@ print(result["theta"], result["phi"], result["miss"])
 ```c
 int32_t ballistic_solve(const BallisticInputs* in, BallisticOutputs* out);
 ```
-See `ballistic_c_api.h` for `BallisticInputs/Outputs` definitions.
+See `ballistic_solver_c_api.h` for `BallisticInputs/Outputs` definitions.
 
 ---
 
@@ -112,7 +112,7 @@ A C# P/Invoke example is available in:
 examples/csharp/
 ```
 
-On Windows, place `ballistic_c.dll` next to the executable
+On Windows, place `ballistic_solver.dll` next to the executable
 (or ensure it is discoverable via PATH),
 then call `ballistic_solve` via `DllImport`.
 
@@ -141,7 +141,7 @@ cmake --build build -j
 ctest --test-dir build
 ```
 
-The shared library target is `ballistic_c`.
+The shared library target is `ballistic_solver`.
 
 ---
 
