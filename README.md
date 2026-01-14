@@ -36,7 +36,7 @@ print(result["success"], result["status"], result["message"])
 
 Highly curved trajectories under strong air drag, still converging to a hit against moving targets.
 
-https://github.com/user-attachments/assets/6571e9e0-4ab0-4fa7-96f1-f03cee83ab60
+https://github.com/user-attachments/assets/93df68dd-6464-4298-b7cb-b182f7114e08
 
 ---
 
