@@ -89,6 +89,7 @@ jobs:
         with:
           name: native-${{ runner.os }}
           path: ballistic_solver_*.zip
+          if-no-files-found: error
 
   py_wheels:
     name: Build python wheels (${{ matrix.os }})
@@ -110,7 +111,7 @@ jobs:
       - name: Build wheels (cibuildwheel)
         uses: pypa/cibuildwheel@v3.3.1
         with:
-          package-dir: bindings/python
+          package-dir: .
           output-dir: wheelhouse
         env:
           CIBW_BUILD: "cp310-* cp311-* cp312-*"
@@ -144,15 +145,16 @@ jobs:
           python-version: "3.12"
 
       - name: Build sdist
-        working-directory: bindings/python
+        shell: bash
         run: |
+          set -euo pipefail
           python -m pip install -U pip build
           python -m build --sdist
 
       - uses: actions/upload-artifact@v4
         with:
           name: pysdist
-          path: bindings/python/dist/*.tar.gz
+          path: dist/*.tar.gz
           if-no-files-found: error
 
   publish:
