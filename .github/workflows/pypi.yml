@@ -27,12 +27,12 @@ jobs:
           python -m pip install -U pip
           python -m pip install -U build
 
-      - name: Build sdist + wheel
-        working-directory: bindings/python
+      - name: Build
+        working-directory: ballistic_solver
         run: |
           python -m build
 
-      - name: Publish to PyPI (Trusted Publisher)
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: bindings/python/dist
+          packages-dir: ballistic_solver/dist
