@@ -1,5 +1,11 @@
 <img width="2024" height="512" alt="banner" src="https://github.com/user-attachments/assets/f4e57e3f-f584-4938-a321-e9dd83dbbac3" />
 
+[![CI](https://github.com/ujinf74/ballistic-solver/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ujinf74/ballistic-solver/actions/workflows/ci.yml)
+[![Release](https://github.com/ujinf74/ballistic-solver/actions/workflows/release.yml/badge.svg)](https://github.com/ujinf74/ballistic-solver/actions/workflows/release.yml)
+[![PyPI](https://img.shields.io/pypi/v/ballistic-solver)](https://pypi.org/project/ballistic-solver/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/ballistic-solver)](https://pypi.org/project/ballistic-solver/)
+[![License](https://img.shields.io/github/license/ujinf74/ballistic-solver)](https://github.com/ujinf74/ballistic-solver/blob/main/LICENSE)
+
 **ballistic-solver** is a native C/C++ numerical solver that computes launch angles to intercept **moving targets** under **gravity** and **quadratic air drag**, with optional **wind**.
 
 Unlike vacuum / closed-form solvers, this project **simulates the projectile** and **solves the intercept numerically**, aiming for robust real-time use even when trajectories are strongly curved.
