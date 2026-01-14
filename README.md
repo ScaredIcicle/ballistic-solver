@@ -1,13 +1,13 @@
 <img width="2024" height="512" alt="banner" src="https://github.com/user-attachments/assets/f4e57e3f-f584-4938-a321-e9dd83dbbac3" />
 
-**ballistic-solver** is a native C/C++ numerical solver that computes launch angles to intercept **moving targets** under **gravity** and **quadratic air drag**.
-Unlike vacuum / closed-form approaches, this solver **simulates the projectile** and **solves the intercept numerically**, targeting robustness for real-time simulations even when trajectories are strongly curved.
+**ballistic-solver** is a native C/C++ numerical solver that computes launch angles to intercept **moving targets** under **gravity** and **quadratic air drag**, with optional **wind**.
+Unlike vacuum / closed-form solvers, this project **simulates the projectile** and **solves the intercept numerically**, aiming for robust real-time use even when trajectories are strongly curved.
 
 ---
 
 ## Quick start
 
-### Python (wheel)
+### Python (PyPI)
 
 ```bash
 pip install ballistic-solver
@@ -29,30 +29,6 @@ print(result["theta"], result["phi"], result["miss"])
 print(result["success"], result["status"], result["message"])
 ```
 
-#### Signature (actual binding)
-
-```python
-solve(relPos0, relVel, v0, kDrag, arcMode=0, params=None) -> dict
-```
-
-* `arcMode` accepts `0/1` or `"low"/"high"` (case-insensitive).
-* **Important:** the `arcMode` argument **overrides** `params.arcMode` even if `params` is provided.
-
-Returned dict keys include:
-
-* `success`, `theta`, `phi`, `miss`, `tStar`, `relMissAtStar`
-* `status`, `message`
-* `iterations`, `acceptedSteps`, `lastLambda`, `lastAlpha`
-
-### C ABI (stable interface)
-
-```c
-void ballistic_inputs_init(BallisticInputs* in);
-int32_t ballistic_solve(const BallisticInputs* in, BallisticOutputs* out);
-```
-
-See `ballistic_solver_c_api.h` for `BallisticInputs/Outputs` definitions and defaults.
-
 ---
 
 ## Demo (Unity)
@@ -63,20 +39,82 @@ Highly curved trajectories under strong air drag, still converging to a hit agai
 
 ---
 
+## Why this solver
+
+Many launch-angle solvers depend on vacuum assumptions or partially linearized models.
+This project instead **simulates the projectile** and **solves the intercept numerically**, targeting robustness in real-time simulations and integration scenarios.
+
+---
+
 ## Key properties
 
 * Moving targets supported
+* Low / High arc selection (since v0.2)
 * Strong air resistance (quadratic drag) supported
+* **Wind vector supported** (since v0.3)
 * Robust in strongly nonlinear regimes (no analytic assumptions)
 * Best-effort result returned even without perfect convergence
 * Explicit success / failure reporting (+ diagnostic message)
 * Stable C ABI for multi-language use
 * Header-only C++ core
-* Low / High arc selection (since v0.2.0)
 
 ---
 
-## Arc mode (since v0.2.0)
+## Python API
+
+### `solve(...)`
+
+```python
+solve(relPos0, relVel, v0, kDrag, arcMode=0, params=None) -> dict
+```
+
+* `relPos0`: target relative position at t=0 (x,y,z)
+* `relVel`: target relative velocity (x,y,z)
+* `v0`: muzzle speed (scalar)
+* `kDrag`: quadratic drag coefficient
+* `arcMode`: `0/1` or `"low"/"high"` (case-insensitive)
+* `params`: optional `BallisticParams` for advanced tuning (gravity, wind, integrator and solver knobs)
+
+Returned dict keys include:
+
+* `success` (bool)
+* `theta`, `phi` (radians)
+* `miss` (closest-approach distance)
+* `tStar` (time of closest approach)
+* `relMissAtStar` (3-vector miss at `tStar`)
+* `status` (SolveStatus integer)
+* `message` (short diagnostic string)
+* plus convergence diagnostics (`iterations`, `acceptedSteps`, `lastLambda`, `lastAlpha`)
+
+### Advanced tuning: `BallisticParams`
+
+Example (wind + high arc):
+
+```python
+import ballistic_solver as bs
+
+p = bs.BallisticParams()
+p.wind = (3.0, 0.0, 0.0)     # wind vector
+p.g = 9.80665                # gravity
+p.dt = 0.01                  # RK4 step
+p.tMax = 20.0                # max sim time
+p.tolMiss = 1e-2             # hit tolerance
+p.maxIter = 20               # LM iterations
+
+result = bs.solve(
+    relPos0=(120, 30, 5),
+    relVel=(2, -1, 0),
+    v0=90,
+    kDrag=0.002,
+    arcMode="high",
+    params=p,
+)
+print(result["theta"], result["phi"], result["miss"])
+```
+
+---
+
+## Arc mode (since v0.2)
 
 C ABI convention:
 
@@ -89,54 +127,27 @@ High arc example:
 
 ---
 
-## How it works (high level)
+## C ABI (stable interface)
 
-1. Simulate projectile motion using RK4 integration with drag (+ wind in core/C ABI)
-2. Track the closest approach between projectile and target
-3. Express the miss at closest approach as an angular residual
-4. Solve the nonlinear system using damped least squares (Levenberg–Marquardt)
-5. Accelerate Jacobian updates with Broyden-style refinement
-6. Return the best solution found
+```c
+void ballistic_inputs_init(BallisticInputs* in);
+int32_t ballistic_solve(const BallisticInputs* in, BallisticOutputs* out);
+```
 
-Failure cases are explicitly detected and reported.
+See `ballistic_solver_c_api.h` for `BallisticInputs/Outputs` definitions and defaults.
 
----
+This enables usage from:
 
-## Advanced parameters (C ABI)
+* C / C++
+* Python (ctypes via the C ABI)
+* C# / .NET / Unity (P/Invoke)
+* Others via FFI
 
-`BallisticInputs` exposes additional controls (all have defaults via `ballistic_inputs_init`):
-
-* `g` (gravity)
-* `wind[3]` (wind vector)
-* `dt` (RK4 step)
-* `tMax` (max sim time)
-* `tolMiss` (hit tolerance)
-* `maxIter` (LM iterations)
-
-Note: The current Python binding exposes many tuning parameters via `BallisticParams`,
-but does **not** expose `wind` as a Python field.
+Prebuilt native binaries are provided via GitHub Releases.
 
 ---
 
-## Status codes (SolveStatus)
-
-`BallisticOutputs.status` / Python `result["status"]` corresponds to the core enum:
-
-* `0` = Ok
-* `1` = InvalidInput
-* `2` = InitialResidualFailed
-* `3` = JacobianFailed
-* `4` = LMStepSingular
-* `5` = ResidualFailedDuringSearch
-* `6` = LineSearchRejected
-* `7` = LambdaTriesExhausted
-* `8` = MaxIterReached
-
-`message` contains a short diagnostic string.
-
----
-
-## Using prebuilt binaries
+## Using prebuilt binaries (C ABI)
 
 Download the archive for your platform from **Releases**.
 
@@ -162,6 +173,39 @@ examples/dotnet/
 On Windows, place `ballistic_solver.dll` next to the executable
 (or ensure it is discoverable via PATH),
 then call `ballistic_solve` via `DllImport`.
+
+This works directly inside Unity.
+
+---
+
+## How it works (high level)
+
+1. Simulate projectile motion using RK4 integration with drag (+ wind)
+2. Track the closest approach between projectile and target
+3. Express the miss at closest approach as an angular residual
+4. Solve the nonlinear system using damped least squares (Levenberg–Marquardt)
+5. Accelerate Jacobian updates with Broyden-style refinement
+6. Return the best solution found
+
+Failure cases are explicitly detected and reported.
+
+---
+
+## Status codes (SolveStatus)
+
+`BallisticOutputs.status` / Python `result["status"]` corresponds to:
+
+* `0` = Ok
+* `1` = InvalidInput
+* `2` = InitialResidualFailed
+* `3` = JacobianFailed
+* `4` = LMStepSingular
+* `5` = ResidualFailedDuringSearch
+* `6` = LineSearchRejected
+* `7` = LambdaTriesExhausted
+* `8` = MaxIterReached
+
+`message` contains a short diagnostic string.
 
 ---
 
