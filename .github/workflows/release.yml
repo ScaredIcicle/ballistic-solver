@@ -65,7 +65,7 @@ jobs:
 
           cp -f "$libpath" dist/
           os="$(echo "${RUNNER_OS}" | tr '[:upper:]' '[:lower:]')"
-          (cd dist && zip -r "../ballistic_${TAG}_${os}.zip" .)
+          (cd dist && zip -r "../ballistic_solver_${TAG}_${os}.zip" .)
 
       - name: Package native (Windows)
         if: runner.os == 'Windows'
@@ -82,12 +82,12 @@ jobs:
           }
 
           Copy-Item -Force $dll.FullName dist\
-          Compress-Archive -Path dist\* -DestinationPath "ballistic_$($env:TAG)_windows.zip" -Force
+          Compress-Archive -Path dist\* -DestinationPath "ballistic_solver_$($env:TAG)_windows.zip" -Force
 
       - uses: actions/upload-artifact@v4
         with:
           name: native-${{ runner.os }}
-          path: ballistic_*.zip
+          path: ballistic_solver_*.zip
 
   upload:
     name: Upload assets to GitHub Release
