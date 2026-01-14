@@ -2,16 +2,16 @@ name: Wheels
 
 on:
   push:
-    tags: ["v*"]
+    tags:
+      - "v*"
   workflow_dispatch:
-  release:
-    types: [published]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
+    name: Build wheels (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
@@ -23,37 +23,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build wheels
+      - name: Build wheels (cibuildwheel)
         uses: pypa/cibuildwheel@v3.3.1
         with:
           package-dir: bindings/python
           output-dir: wheelhouse
         env:
-          CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-*"
+          CIBW_BUILD: "cp310-* cp311-* cp312-*"
           CIBW_SKIP: "*-win32 *-manylinux_i686 *-musllinux_*"
+
           CIBW_ARCHS_MACOS: "universal2"
 
-          CIBW_REPAIR_WHEEL_COMMAND_LINUX: "auditwheel repair -v -w {dest_dir} {wheel}"
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-wheel -v -w {dest_dir} {wheel}"
+          CIBW_BUILD_VERBOSITY: "3"
 
-          CIBW_TEST_COMMAND_WINDOWS: "python -c \"import ballistic_solver; print(ballistic_solver.__file__); print(ballistic_solver.solve)\""
+          CIBW_TEST_COMMAND: >-
+            python -c "import ballistic_solver; from ballistic_solver import ArcMode; print(ArcMode.Low)"
 
-          CIBW_TEST_COMMAND: "python -c \"import ballistic_solver; print(ballistic_solver.__file__); print(ballistic_solver.solve)\""
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}
           path: wheelhouse/*.whl
-
-  release:
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: dist
-          merge-multiple: true
-
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: dist/**/*.whl
+          if-no-files-found: error
