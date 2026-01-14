@@ -20,16 +20,8 @@ set_target_properties(_core PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/ballistic_solver"
 )
 
-if(DEFINED SKBUILD_PLATLIB_DIR)
-  install(TARGETS _core
-    LIBRARY DESTINATION "${SKBUILD_PLATLIB_DIR}/ballistic_solver"
-    RUNTIME DESTINATION "${SKBUILD_PLATLIB_DIR}/ballistic_solver"
-    ARCHIVE DESTINATION "${SKBUILD_PLATLIB_DIR}/ballistic_solver"
-  )
-else()
-  install(TARGETS _core
-    LIBRARY DESTINATION ballistic_solver
-    RUNTIME DESTINATION ballistic_solver
-    ARCHIVE DESTINATION ballistic_solver
-  )
-endif()
+install(TARGETS _core
+  LIBRARY DESTINATION ballistic_solver
+  RUNTIME DESTINATION ballistic_solver
+  ARCHIVE DESTINATION ballistic_solver
+)

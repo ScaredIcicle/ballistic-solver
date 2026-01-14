@@ -13,8 +13,8 @@ readme = "README.md"
 license = "MIT"
 
 [tool.scikit-build]
-cmake.source-dir = "."
+cmake.source-dir = "bindings/python"
 cmake.build-type = "Release"
+wheel.packages = ["bindings/python/ballistic_solver"]
 
-[tool.scikit-build.wheel.packages]
-ballistic_solver = "bindings/python/ballistic_solver"
+sdist.include = ["include/**", "src/**", "bindings/python/**", "CMakeLists.txt"]
