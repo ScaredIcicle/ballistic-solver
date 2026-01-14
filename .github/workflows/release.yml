@@ -20,7 +20,9 @@ env:
 jobs:
   native:
     name: Build native (${{ matrix.os }})
-    if: startsWith(env.TAG, 'v')
+    if: >
+      (github.event_name == 'push' && startsWith(github.ref_name, 'v')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.tag, 'v'))
     strategy:
       fail-fast: false
       matrix:
@@ -90,7 +92,9 @@ jobs:
   upload:
     name: Upload assets to GitHub Release
     needs: [native]
-    if: startsWith(env.TAG, 'v')
+    if: >
+      (github.event_name == 'push' && startsWith(github.ref_name, 'v')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(inputs.tag, 'v'))
     runs-on: ubuntu-latest
 
     steps:
@@ -117,5 +121,4 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ls -la dist || true
           gh release upload "${TAG}" dist/*.zip --clobber
