@@ -1,21 +1,26 @@
-name: Native Release Assets
+name: Release Native Assets
 
 on:
-  workflow_run:
-    workflows: ["Wheels"]
-    types: [completed]
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.3.1)"
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 env:
-  TAG: ${{ github.event.workflow_run.head_branch }}
+  TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
 
 jobs:
   native:
-    if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      startsWith(env.TAG, 'v')
+    name: Build native (${{ matrix.os }})
+    if: startsWith(env.TAG, 'v')
     strategy:
       fail-fast: false
       matrix:
@@ -26,13 +31,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: refs/tags/${{ env.TAG }}
 
       - name: Configure (CMake Release)
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build build --config Release -j
+        run: cmake --build build --config Release --parallel
 
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
@@ -46,9 +51,9 @@ jobs:
           cp -f include/ballistic_solver_c_api.h dist/
 
           if [[ "${RUNNER_OS}" == "Linux" ]]; then
-            libpath="$(find build -maxdepth 6 -type f -name "libballistic_solver.so" -print -quit)"
+            libpath="$(find build -maxdepth 10 -type f -name "libballistic_solver.so" -print -quit)"
           else
-            libpath="$(find build -maxdepth 6 -type f -name "libballistic_solver.dylib" -print -quit)"
+            libpath="$(find build -maxdepth 10 -type f -name "libballistic_solver.dylib" -print -quit)"
           fi
 
           if [[ -z "${libpath:-}" ]]; then
@@ -57,10 +62,8 @@ jobs:
           fi
 
           cp -f "$libpath" dist/
-
-          tag="${TAG}"
           os="$(echo "${RUNNER_OS}" | tr '[:upper:]' '[:lower:]')"
-          (cd dist && zip -r "../ballistic_${tag}_${os}.zip" .)
+          (cd dist && zip -r "../ballistic_${TAG}_${os}.zip" .)
 
       - name: Package native (Windows)
         if: runner.os == 'Windows'
@@ -75,10 +78,9 @@ jobs:
             Write-Error "ERROR: ballistic_solver.dll not found under build/"
             exit 1
           }
-          Copy-Item -Force $dll.FullName dist\
 
-          $tag = $env:TAG
-          Compress-Archive -Path dist\* -DestinationPath "ballistic_${tag}_windows.zip" -Force
+          Copy-Item -Force $dll.FullName dist\
+          Compress-Archive -Path dist\* -DestinationPath "ballistic_$($env:TAG)_windows.zip" -Force
 
       - uses: actions/upload-artifact@v4
         with:
@@ -86,16 +88,34 @@ jobs:
           path: ballistic_*.zip
 
   upload:
+    name: Upload assets to GitHub Release
     needs: [native]
+    if: startsWith(env.TAG, 'v')
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: dist
           merge-multiple: true
 
-      - name: Upload zips to existing Release
+      - name: Create release if missing
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
+          set -euo pipefail
+          if gh release view "${TAG}" > /dev/null 2>&1; then
+            echo "Release ${TAG} already exists."
+          else
+            gh release create "${TAG}" --title "${TAG}" --generate-notes
+          fi
+
+      - name: Upload zips
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ls -la dist || true
           gh release upload "${TAG}" dist/*.zip --clobber
