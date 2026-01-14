@@ -8,11 +8,14 @@ on:
 permissions:
   contents: write
 
+env:
+  TAG: ${{ github.event.workflow_run.head_branch }}
+
 jobs:
   native:
     if: >
       github.event.workflow_run.conclusion == 'success' &&
-      startsWith(github.event.workflow_run.ref, 'refs/tags/v')
+      startsWith(env.TAG, 'v')
     strategy:
       fail-fast: false
       matrix:
@@ -55,8 +58,7 @@ jobs:
 
           cp -f "$libpath" dist/
 
-          ref="${{ github.event.workflow_run.ref }}"
-          tag="${ref#refs/tags/}"
+          tag="${TAG}"
           os="$(echo "${RUNNER_OS}" | tr '[:upper:]' '[:lower:]')"
           (cd dist && zip -r "../ballistic_${tag}_${os}.zip" .)
 
@@ -75,8 +77,7 @@ jobs:
           }
           Copy-Item -Force $dll.FullName dist\
 
-          $ref = "${{ github.event.workflow_run.ref }}"
-          $tag = $ref -replace '^refs/tags/', ''
+          $tag = $env:TAG
           Compress-Archive -Path dist\* -DestinationPath "ballistic_${tag}_windows.zip" -Force
 
       - uses: actions/upload-artifact@v4
@@ -97,6 +98,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ref="${{ github.event.workflow_run.ref }}"
-          tag="${ref#refs/tags/}"
-          gh release upload "$tag" dist/*.zip --clobber
+          gh release upload "${TAG}" dist/*.zip --clobber
