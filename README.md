@@ -36,7 +36,7 @@ print(result["success"], result["status"], result["message"])
 
 Highly curved trajectories under strong air drag, still converging to a hit against moving targets.
 
-https://github.com/user-attachments/assets/93df68dd-6464-4298-b7cb-b182f7114e08
+https://github.com/user-attachments/assets/c0c69cdd-0dd4-4606-9c7d-f21dd002d7f7
 
 ---
 
@@ -95,8 +95,8 @@ Example (wind + high arc):
 import ballistic_solver as bs
 
 p = bs.BallisticParams()
-p.wind = (3.0, 0.0, 0.0)     # wind vector
 p.g = 9.80665                # gravity
+p.wind = (3.0, 0.0, 0.0)     # wind vector
 p.dt = 0.01                  # RK4 step
 p.tMax = 20.0                # max sim time
 p.tolMiss = 1e-2             # hit tolerance
@@ -124,7 +124,20 @@ C ABI convention:
 
 High arc example:
 
-[https://github.com/user-attachments/assets/4334ed87-597e-4ad4-b21e-c1a1a17e8cd8](https://github.com/user-attachments/assets/4334ed87-597e-4ad4-b21e-c1a1a17e8cd8)
+https://github.com/user-attachments/assets/4334ed87-597e-4ad4-b21e-c1a1a17e8cd8
+
+---
+
+## Wind (since v0.3)
+
+C ABI convention:
+
+- `wind[3]` = air velocity vector (same frame as `relPos0/relVel`)
+- Drag uses relative airspeed: `v_rel = v_projectile - wind`
+
+Wind demo:
+
+https://github.com/user-attachments/assets/1cd998cf-34db-4a74-8817-c6393227ef4e
 
 ---
 
