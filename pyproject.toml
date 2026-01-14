@@ -9,16 +9,12 @@ build-backend = "scikit_build_core.build"
 name = "ballistic-solver"
 version = "0.3.2"
 requires-python = ">=3.10"
-readme = "../../README.md"
+readme = "README.md"
 license = "MIT"
 
 [tool.scikit-build]
-wheel.packages = ["ballistic_solver"]
-cmake.source-dir = "../.."
+cmake.source-dir = "."
 cmake.build-type = "Release"
 
-sdist.include = [
-  "../../CMakeLists.txt",
-  "../../include/**",
-  "../../src/**",
-]
+[tool.scikit-build.wheel.packages]
+ballistic_solver = "bindings/python/ballistic_solver"
