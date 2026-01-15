@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ujinf74/ballistic-solver/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ujinf74/ballistic-solver/actions/workflows/ci.yml)
 [![Release + PyPI](https://github.com/ujinf74/ballistic-solver/actions/workflows/release.yml/badge.svg)](https://github.com/ujinf74/ballistic-solver/actions/workflows/release.yml)
-[![CodeQL Advanced](https://github.com/ujinf74/ballistic-solver/actions/workflows/codeql.yml/badge.svg)](https://github.com/ujinf74/ballistic-solver/actions/workflows/codeql.yml)
+[![CodeQL](https://github.com/ujinf74/ballistic-solver/actions/workflows/codeql.yml/badge.svg)](https://github.com/ujinf74/ballistic-solver/actions/workflows/codeql.yml)
 [![PyPI](https://img.shields.io/pypi/v/ballistic-solver)](https://pypi.org/project/ballistic-solver/)
 [![License](https://img.shields.io/github/license/ujinf74/ballistic-solver)](https://github.com/ujinf74/ballistic-solver/blob/main/LICENSE)
 
