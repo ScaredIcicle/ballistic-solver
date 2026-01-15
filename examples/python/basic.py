@@ -1,4 +1,4 @@
-from ballistic_solver import BallisticParams, solve, ArcMode
+from ballistic_solver import BallisticParams, solve
 
 res = solve(relPos0=(100,30,5), relVel=(-10,30,0), v0=80.0, kDrag=0.005)
 
