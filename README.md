@@ -1,9 +1,19 @@
-<img width="2024" height="512" alt="banner" src="https://github.com/user-attachments/assets/f4e57e3f-f584-4938-a321-e9dd83dbbac3" />
+<img width="1280" height="320" alt="banner" src="https://github.com/user-attachments/assets/f2bd3ffc-cafb-4ea3-a346-9c0ce1fb0610" />
 
-[![CI](https://github.com/ujinf74/ballistic-solver/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ujinf74/ballistic-solver/actions/workflows/ci.yml)
-[![Release Native + PyPI](https://github.com/ujinf74/ballistic-solver/actions/workflows/release.yml/badge.svg)](https://github.com/ujinf74/ballistic-solver/actions/workflows/release.yml)
-[![CodeQL Advanced](https://github.com/ujinf74/ballistic-solver/actions/workflows/codeql.yml/badge.svg)](https://github.com/ujinf74/ballistic-solver/actions/workflows/codeql.yml)
-[![PyPI](https://img.shields.io/pypi/v/ballistic-solver)](https://pypi.org/project/ballistic-solver/)
+<p align="center">
+  <a href="https://github.com/ujinf74/ballistic-solver/actions/workflows/ci.yml">
+    <img alt="CI" src="https://github.com/ujinf74/ballistic-solver/actions/workflows/ci.yml/badge.svg?branch=main">
+  </a>
+  <a href="https://github.com/ujinf74/ballistic-solver/actions/workflows/release.yml">
+    <img alt="Release Native + PyPI" src="https://github.com/ujinf74/ballistic-solver/actions/workflows/release.yml/badge.svg">
+  </a>
+  <a href="https://github.com/ujinf74/ballistic-solver/actions/workflows/codeql.yml">
+    <img alt="CodeQL Advanced" src="https://github.com/ujinf74/ballistic-solver/actions/workflows/codeql.yml/badge.svg">
+  </a>
+  <a href="https://pypi.org/project/ballistic-solver/">
+    <img alt="PyPI" src="https://img.shields.io/pypi/v/ballistic-solver">
+  </a>
+</p>
 
 **ballistic-solver** is a native C/C++ numerical solver that computes launch angles to intercept **moving targets** under **gravity** and **quadratic air drag**, with optional **wind**.
 
