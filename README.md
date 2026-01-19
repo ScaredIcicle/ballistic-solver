@@ -21,6 +21,14 @@ Unlike vacuum / closed-form solvers, this project **simulates the projectile** a
 
 ---
 
+## Demo (Unity)
+
+Highly curved trajectories under strong air drag, still converging to a hit against moving targets.
+
+https://github.com/user-attachments/assets/c0c69cdd-0dd4-4606-9c7d-f21dd002d7f7
+
+---
+
 ## Quick start
 
 ### Python (PyPI)
@@ -47,14 +55,6 @@ print(result["success"], result["status"], result["message"])
 
 ---
 
-## Demo (Unity)
-
-Highly curved trajectories under strong air drag, still converging to a hit against moving targets.
-
-https://github.com/user-attachments/assets/c0c69cdd-0dd4-4606-9c7d-f21dd002d7f7
-
----
-
 ## Why this solver
 
 Many launch-angle solvers depend on vacuum assumptions or partially linearized models.
@@ -74,60 +74,6 @@ This project instead **simulates the projectile** and **solves the intercept num
 * Stable C ABI for multi-language use
 * Header-only C++ core
 * Easy install via PyPI: `pip install ballistic-solver`
-
----
-
-## Python API
-
-### `solve(...)`
-
-```python
-solve(relPos0, relVel, v0, kDrag, arcMode=0, params=None) -> dict
-```
-
-* `relPos0`: target relative position at t=0 (x,y,z)
-* `relVel`: target relative velocity (x,y,z)
-* `v0`: muzzle speed (scalar)
-* `kDrag`: quadratic drag coefficient
-* `arcMode`: `0/1` or `"low"/"high"` (case-insensitive)
-* `params`: optional `BallisticParams` for advanced tuning (gravity, wind, integrator and solver knobs)
-
-Returned dict keys include:
-
-* `success` (bool)
-* `theta`, `phi` (radians)
-* `miss` (closest-approach distance)
-* `tStar` (time of closest approach)
-* `relMissAtStar` (3-vector miss at `tStar`)
-* `status` (SolveStatus integer)
-* `message` (short diagnostic string)
-* plus convergence diagnostics (`iterations`, `acceptedSteps`, `lastLambda`, `lastAlpha`)
-
-### Advanced tuning: `BallisticParams`
-
-Example (wind + high arc):
-
-```python
-import ballistic_solver as bs
-
-p = bs.BallisticParams()
-p.g = 9.80665                # gravity
-p.wind = (3.0, 0.0, 0.0)     # wind vector
-p.dt = 0.01                  # RK4 step
-p.tMax = 20.0                # max sim time
-p.tolMiss = 1e-2             # hit tolerance
-p.maxIter = 20               # LM iterations
-
-result = bs.solve(
-    relPos0=(120, 30, 5),
-    relVel=(2, -1, 0),
-    v0=90,
-    kDrag=0.002,
-    arcMode="high",
-    params=p,
-)
-print(result["theta"], result["phi"], result["miss"])
-```
 
 ---
 
@@ -189,6 +135,60 @@ Each release contains:
   * Linux: `libballistic_solver.so`
   * macOS: `libballistic_solver.dylib`
 * C ABI header: `ballistic_solver_c_api.h`
+
+---
+
+## Python API
+
+### `solve(...)`
+
+```python
+solve(relPos0, relVel, v0, kDrag, arcMode=0, params=None) -> dict
+```
+
+* `relPos0`: target relative position at t=0 (x,y,z)
+* `relVel`: target relative velocity (x,y,z)
+* `v0`: muzzle speed (scalar)
+* `kDrag`: quadratic drag coefficient
+* `arcMode`: `0/1` or `"low"/"high"` (case-insensitive)
+* `params`: optional `BallisticParams` for advanced tuning (gravity, wind, integrator and solver knobs)
+
+Returned dict keys include:
+
+* `success` (bool)
+* `theta`, `phi` (radians)
+* `miss` (closest-approach distance)
+* `tStar` (time of closest approach)
+* `relMissAtStar` (3-vector miss at `tStar`)
+* `status` (SolveStatus integer)
+* `message` (short diagnostic string)
+* plus convergence diagnostics (`iterations`, `acceptedSteps`, `lastLambda`, `lastAlpha`)
+
+### Advanced tuning: `BallisticParams`
+
+Example (wind + high arc):
+
+```python
+import ballistic_solver as bs
+
+p = bs.BallisticParams()
+p.g = 9.80665                # gravity
+p.wind = (3.0, 0.0, 0.0)     # wind vector
+p.dt = 0.01                  # RK4 step
+p.tMax = 20.0                # max sim time
+p.tolMiss = 1e-2             # hit tolerance
+p.maxIter = 20               # LM iterations
+
+result = bs.solve(
+    relPos0=(120, 30, 5),
+    relVel=(2, -1, 0),
+    v0=90,
+    kDrag=0.002,
+    arcMode="high",
+    params=p,
+)
+print(result["theta"], result["phi"], result["miss"])
+```
 
 ---
 
